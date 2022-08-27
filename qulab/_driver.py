@@ -8,7 +8,8 @@ import string
 
 import numpy as np
 import quantities as pq
-import visa
+# import visa
+import pyvisa as visa
 
 from .util import IEEE_488_2_BinBlock, get_unit_prefix
 

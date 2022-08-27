@@ -20,6 +20,8 @@ from ._rcmap import RcMap
 from .base import HasSource
 from .ui import ApplicationUI, display_source_code
 
+from scipy.optimize import minimize
+
 
 class Application(HasSource):
     """Base class for apps."""
@@ -43,8 +45,10 @@ class Application(HasSource):
         self.run_event = asyncio.Event()
         self.interrupt_event = asyncio.Event()
         self.__title = None
-        self._setUp = ''
-        self._tearDown = ''
+        # self._setUp = ''
+        self._setUp = lambda : None
+        # self._tearDown = ''
+        self._tearDown = lambda : None
 
         if parent is not None:
             self.rc.parent = parent.rc
@@ -161,6 +165,13 @@ class Application(HasSource):
         loop = asyncio.get_event_loop()
         if loop.is_running():
             future = asyncio.ensure_future(self.done())
+            # future = await loop.create_task(self.done())
+
+            # if block:
+            #     future = await loop.create_task(self.done())
+            # else:
+            #     future = loop.create_task(self.done())
+
             if block:
                 while not future.done():
                     time.sleep(1)
@@ -194,12 +205,15 @@ class Application(HasSource):
             handler(datetime.datetime.now() - start_time)
 
     async def done(self):
+        # print("good1")
         self.reset()
         self._set_start()
-        exec(self._setUp())
+        # exec(self._setUp())
+        self._setUp()
         async for data in self.work():
             self.data.collect(data)
             result = self.data.result()
+            # print(result)
             if self.level <= self.level_limit:
                 self.data.save()
             draw(self.__class__.plot, result, self)
@@ -207,7 +221,8 @@ class Application(HasSource):
                 break
             await self.run_event.wait()
         self._set_done()
-        exec(self._tearDown())
+        # exec(self._tearDown())
+        self._tearDown()
         return self.data.result()
 
     def setUp(self, f=''):
@@ -230,12 +245,25 @@ class Application(HasSource):
         yield 0.5, np.array([1,2,3])
         """
 
+    # async def test(self):
+    #     while not self.is_done():
+    #         print("wait")
+
     def pre_save(self, *args):
         return args
 
     @staticmethod
     def plot(fig, data):
         pass
+
+    @classmethod
+    def image(cls, fig, data, option=0):
+        '''快速画图的方法：用于数据处理阶段，事先定义，格式化输出图片；
+        很有必要！在数据库record类里定义调用的方法;
+        option: 选项参数'''
+        # 默认使用上面的 plot
+        if option == 0:
+            cls.plot(fig, data)
 
     @classmethod
     def save(cls, version=None, package=''):
@@ -304,8 +332,8 @@ class DataCollector:
             settings=self.app.settings,
             tags=self.app.tags,
             params=self.app.params,
-            setup=self._setUp
-            teardown=self._tearDown
+            # setup=self._setUp
+            # teardown=self._tearDown
             rc=rc,
             hidden=False if self.app.parent is None else True,
             app=self.app.__DBDocument__,

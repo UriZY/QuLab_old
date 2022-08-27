@@ -6,7 +6,8 @@ import os
 import re
 import string
 
-import visa
+# import visa
+import pyvisa as visa
 
 from .. import db
 from .util import IEEE_488_2_BinBlock

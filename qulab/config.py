@@ -40,7 +40,8 @@ ssl:
 
 
 def load_config(path):
-    return yaml.load(path.read_text())
+    # return yaml.load(path.read_text())
+    return yaml.load(path.read_text(), Loader=yaml.FullLoader)
 
 
 def config_dir():

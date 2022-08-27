@@ -32,11 +32,13 @@ def make_image(func, data, fig_format='svg', **kwds):
 
     fig = __figs.get(tuple(kwds.items()), None)
     if fig is None:
+        # print("create a new fig!!!")
         fig = mpl.figure.Figure(**kwds)
         canvas = backend_svg.FigureCanvasSVG(fig)
         __figs[tuple(kwds.items())] = fig
     else:
         fig.clear()
+    # print(type(fig))
     func(fig, data)
     buff = io.BytesIO()
     fig.savefig(buff, format=fig_format)
